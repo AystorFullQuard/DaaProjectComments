@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Comment Sentiment Analysis</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Добавлен Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>YouTube Comment Sentiment Analysis</h1>
@@ -13,12 +13,15 @@
         <input type="text" id="video_url" name="video_url" required>
         <button type="submit">Get Metrics</button>
     </form>
+    <div id="videoThumbnail" style="display:none;">
+        <img id="thumbnail" src="" alt="Video Thumbnail" style="max-width: 300px; height: auto;">
+    </div>
     <div id="results" style="display:none;">
         <h2>Sentiment Analysis Results:</h2>
         <p>Positive: <span id="positive"></span></p>
         <p>Neutral: <span id="neutral"></span></p>
         <p>Negative: <span id="negative"></span></p>
-        <canvas id="sentimentChart" width="400" height="200"></canvas> <!-- Контейнер для графика -->
+        <canvas id="sentimentChart" width="300" height="100"></canvas>
     </div>
     <div id="error" style="display:none; color:red;">
         <p id="errorMessage"></p>
@@ -41,17 +44,29 @@
                 document.getElementById('positive').textContent = result.positive;
                 document.getElementById('neutral').textContent = result.neutral;
                 document.getElementById('negative').textContent = result.negative;
+                document.getElementById('thumbnail').src = result.thumbnail; // Setting the thumbnail image source
+                document.getElementById('videoThumbnail').style.display = 'block'; // Displaying the thumbnail
                 renderChart(result);
             } else {
                 document.getElementById('results').style.display = 'none';
+                document.getElementById('videoThumbnail').style.display = 'none'; // Hide the thumbnail if there is an error
                 document.getElementById('error').style.display = 'block';
                 document.getElementById('errorMessage').textContent = result.error;
             }
         });
 
+        let sentimentChart; // Declare this outside the function to keep a reference to the chart instance
+
         function renderChart(data) {
             const ctx = document.getElementById('sentimentChart').getContext('2d');
-            const sentimentChart = new Chart(ctx, {
+
+            // If the chart instance exists, destroy it.
+            if (sentimentChart) {
+                sentimentChart.destroy();
+            }
+
+            // Create a new chart instance with the new data
+            sentimentChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Positive', 'Neutral', 'Negative'],

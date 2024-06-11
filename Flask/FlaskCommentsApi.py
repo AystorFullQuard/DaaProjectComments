@@ -14,6 +14,12 @@ YOUTUBE_API_VERSION = 'v3'
 def get_comments(video_id):
     youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=API_KEY)
     comments = []
+    thumbnail_url = None
+    video_response = youtube.videos().list(part="snippet", id=video_id).execute()
+
+    if video_response['items']:
+        thumbnail_url = video_response['items'][0]['snippet']['thumbnails']['high']['url']
+
     results = youtube.commentThreads().list(part="snippet", videoId=video_id, textFormat="plainText").execute()
 
     while results:
@@ -35,7 +41,8 @@ def get_comments(video_id):
         else:
             break
 
-    return {'comments': comments}
+    return {'comments': comments, 'thumbnail': thumbnail_url}
+
 
 
 @app.route('/get_comments', methods=['GET'])

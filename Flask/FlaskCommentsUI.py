@@ -7,9 +7,11 @@ app = Flask(__name__)
 GET_COMMENTS_URL = 'http://127.0.0.1:5001/get_comments'
 ANALYZE_COMMENTS_URL = 'http://127.0.0.1:5002/analyze_comments'
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/get_metrics', methods=['POST'])
 def get_metrics():
@@ -22,14 +24,18 @@ def get_metrics():
     if response.status_code != 200:
         return jsonify({'error': 'Failed to fetch comments'}), response.status_code
 
-    comments = response.json()
+    comments_data = response.json()
+    comments = comments_data.get('comments')
+    thumbnail_url = comments_data.get('thumbnail')
 
-    analyze_response = requests.post(ANALYZE_COMMENTS_URL, json=comments)
+    analyze_response = requests.post(ANALYZE_COMMENTS_URL, json={'comments': comments})
     if analyze_response.status_code != 200:
         return jsonify({'error': 'Failed to analyze comments'}), analyze_response.status_code
 
     metrics = analyze_response.json()
+    metrics['thumbnail'] = thumbnail_url
     return jsonify(metrics)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5003)
